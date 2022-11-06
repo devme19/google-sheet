@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:gsheet/models/user_fields.dart';
 import 'package:gsheets/gsheets.dart';
@@ -19,8 +20,11 @@ class SheetController extends GetxController with StateMixin{
   }
   ''';
    var _gsheets;
-   List<User> users=[];
+   List<Map<String,String>> items=[];
+   // List<User> users=[];
    List<String> sheetNames=['New Sheet'];
+   List<String> headerRow=[];
+   int delay = 200;
   @override
   void onInit() async{
     super.onInit();
@@ -66,16 +70,15 @@ class SheetController extends GetxController with StateMixin{
       return spreadsheet.worksheetByTitle(title)!;
     }
   }
-  Future insert(User user)async{
+  Future insert(Map<String,String> item)async{
     if(sheet == null) return;
     try{
-      sheet!.values.map.appendRow(user.toJson());
-      // Get.snackbar("Success", "Data added to sheet");
-      users.add(user);
-      change(users, status: RxStatus.success());
+      sheet!.values.map.appendRow(item);
+      items.add(item);
+      change(items, status: RxStatus.success());
       Get.back();
-      await Future.delayed(Duration(seconds: 1));
-      Get.snackbar("Success", "Data added to sheet");
+      await Future.delayed(Duration(milliseconds: delay));
+      Get.snackbar("Success", "Data added to sheet",backgroundColor: Colors.black45,colorText: Colors.white,snackPosition: SnackPosition.BOTTOM);
     }catch(e){
       print(e);
     }
@@ -92,27 +95,45 @@ class SheetController extends GetxController with StateMixin{
       change(null, status: RxStatus.error());
       return;
     }
+    headerRow = [];
+    // headerRow.add('Action');
+    headerRow.addAll(await sheet!.values.row(1));
+
     final usersJson = await sheet!.values.map.allRows();
     if(usersJson == null){
       change(null, status: RxStatus.empty());
     }
     else{
-      users = usersJson.map((e) => User.fromJson(e)).toList();
-      change(users, status: RxStatus.success());
+      items = usersJson;
+      // users = usersJson.map((e) => User.fromJson(e)).toList();
+      change(items, status: RxStatus.success());
     }
   }
-  Future<bool> updateUser(String id,Map<String,dynamic> user)async{
+  Future<bool> updateUser(Map<String,String> item)async{
     if(sheet == null) return false;
-    return sheet!.values.map.insertRowByKey(id,user);
+    int index = items.indexWhere((element) => element['id'] == item['id']);
+    items[index] = item;
+    change(items, status: RxStatus.success());
+    sheet!.values.map.insertRowByKey(item['id']!, item);
+    Get.back();
+    await Future.delayed(Duration(milliseconds: delay));
+    Get.snackbar("Success", "Data edited successfully",backgroundColor: Colors.black45,colorText: Colors.white,snackPosition: SnackPosition.BOTTOM);
+    return true;
   }
   Future<bool> updateCell({required String id,required String key,required dynamic value})async{
     if(sheet == null) return false;
     return sheet!.values.insertValueByKeys(value, columnKey: key, rowKey: id);
   }
-  Future<bool> deleteById(int id)async{
+  Future<bool> deleteById(String id)async{
     if(sheet == null) return false;
+    items.remove(items.where((element) => element['id'] == id).first);
+    // update(items);
+    change(items, status: RxStatus.success());
     final index = await sheet!.values.rowIndexOf(id);
     if(index == -1) return false;
+    await Future.delayed(Duration(milliseconds: delay));
+    Get.snackbar("Success", "Data deleted successfully",backgroundColor: Colors.black45,colorText: Colors.white,snackPosition: SnackPosition.BOTTOM);
     return sheet!.deleteRow(index);
+    // return true;
   }
 }

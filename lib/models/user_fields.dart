@@ -4,17 +4,18 @@ class UserFields{
   static const String name = 'name';
   static const String email = 'email';
 
-  static List<String> getFields()=>[action,id,name,email];
+  static List<String> getFields()=>[action,name,email];
 }
 class User{
-  final String? id;
-  final String name;
-  final String email;
+  String? id;
+  String name;
+  String email;
 
   User({this.id,required this.name,required this.email});
 
   Map<String,dynamic> toJson()=>
       {
+        UserFields.action:"",
         UserFields.id:id,
         UserFields.name:name,
         UserFields.email:email,
