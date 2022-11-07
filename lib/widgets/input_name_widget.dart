@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:gsheet/widgets/button_widget.dart';
 
-class InputNewSheetNameWidget extends StatelessWidget {
-  InputNewSheetNameWidget({Key? key}) : super(key: key);
+class InputNameWidget extends StatelessWidget {
+  InputNameWidget({Key? key,this.title}) : super(key: key);
+  ValueChanged<String>? title;
   TextEditingController nameController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   @override
@@ -37,7 +38,9 @@ class InputNewSheetNameWidget extends StatelessWidget {
     final form = _formKey.currentState;
     final isValid = form!.validate();
     if(isValid){
-
+      if(title!=null){
+        title!(nameController.text);
+      }
     }
 
   });

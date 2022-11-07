@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:gsheet/models/user_fields.dart';
+import 'package:gsheet/utils/state_status.dart';
 import 'package:gsheets/gsheets.dart';
 
 class SheetController extends GetxController with StateMixin{
@@ -22,9 +23,11 @@ class SheetController extends GetxController with StateMixin{
    var _gsheets;
    List<Map<String,String>> items=[];
    // List<User> users=[];
-   List<String> sheetNames=['New Sheet'];
+   RxList sheetNames = ['New sheet'].obs;
+   var getSheetNamesStatus = StateStatus.INITIAL.obs;
    List<String> headerRow=[];
    int delay = 200;
+  RxBool dragStarted = false.obs;
   @override
   void onInit() async{
     super.onInit();
@@ -36,31 +39,32 @@ class SheetController extends GetxController with StateMixin{
   Spreadsheet? spreadSheet;
   Future init() async{
     try{
-      change(null, status: RxStatus.loading());
+      getSheetNamesStatus.value = StateStatus.LOADING;
       _gsheets = GSheets(_credentials);
-      // final spreadSheet = _gsheets.worksheetByTitle("user");
       spreadSheet = await _gsheets.spreadsheet(_spreadSheetId);
-
       for(var item in spreadSheet!.sheets){
-        // print('titles:${item.title}');
         sheetNames.add(item.title);
       }
-      change(sheetNames, status: RxStatus.success());
+      getSheetNamesStatus.value = StateStatus.SUCCESS;
       // spreadSheet!.sheets.map((e) => print('titles:${e.title}'));
       // sheet = await _getWorkSheet(spreadSheet!,title:'user');
       // List<String> firstRow = UserFields.getFields();
       // sheet!.values.insertRow(1,firstRow);
     }catch(e){
       print('Init error $e');
+      getSheetNamesStatus.value = StateStatus.ERROR;
     }
   }
   createFirstRow(List<String> titles){
     sheet!.values.insertRow(1,titles);
   }
-  createSheet(String name)async{
-    change(null, status: RxStatus.loading());
-    sheet = await _getWorkSheet(spreadSheet!,title:name);
-    getAllRows();
+  Future createSheet(String name)async{
+    try{
+      sheet = await _getWorkSheet(spreadSheet!,title:name);
+      await sheet!.values.appendColumn(['id']);
+      sheetNames.add(name);
+    }catch(e){
+    }
   }
   Future<Worksheet> _getWorkSheet(Spreadsheet spreadsheet,{required String title})async{
     try{
@@ -122,7 +126,20 @@ class SheetController extends GetxController with StateMixin{
   }
   Future<bool> updateCell({required String id,required String key,required dynamic value})async{
     if(sheet == null) return false;
+
     return sheet!.values.insertValueByKeys(value, columnKey: key, rowKey: id);
+  }
+  Future<bool> appendColumn(List<String> titles)async{
+    if(sheet == null) return false;
+    bool result= await sheet!.values.appendColumn(titles);
+    if(result){
+      getAllRows();
+      Get.back();
+      await Future.delayed(Duration(milliseconds: delay));
+      Get.snackbar("Success", "Column added successfully",backgroundColor: Colors.black45,colorText: Colors.white,snackPosition: SnackPosition.BOTTOM);
+    }
+    return result;
+
   }
   Future<bool> deleteById(String id)async{
     if(sheet == null) return false;
@@ -135,5 +152,9 @@ class SheetController extends GetxController with StateMixin{
     Get.snackbar("Success", "Data deleted successfully",backgroundColor: Colors.black45,colorText: Colors.white,snackPosition: SnackPosition.BOTTOM);
     return sheet!.deleteRow(index);
     // return true;
+  }
+  Future<bool> deleteSheet(int index)async{
+    sheetNames.removeAt(index);
+    return true;
   }
 }
