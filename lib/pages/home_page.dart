@@ -12,29 +12,37 @@ class HomePage extends GetView<SheetController> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Scaffold(
-        floatingActionButton: DragTarget(
-          onWillAccept: (data) {
-            // print("value");
-            return true;
-          },
-          onAccept: (int index){
-            controller.deleteSheet(index);
-          },
-          builder: (context,__,___)=>
-          FloatingActionButton.large(
-            onPressed: (){},
-            backgroundColor: Colors.red,
-            child: Icon(Icons.delete,color: Colors.white,),
-          )
+      child: Obx(()=>
+          Scaffold(
+              floatingActionButton:
+              controller.getSheetNamesStatus.value == StateStatus.SUCCESS? DragTarget(
+                  onWillAccept: (data) {
+                    // print("value");
+                    controller.itemWidth.value = 60;
+                    controller.itemHeight.value = 60;
+                    controller.itemColor.value = Colors.red;
 
-        ),
-        body:
-            Obx(()=>
-            buildView()
-            )
+                    return true;
+                  },
+                  onAccept: (int index){
+                    controller.deleteSheet(index);
 
-      ),
+                    controller.itemColor.value = Colors.green;
+                  },
+                  builder: (context,__,___)=>
+                      const FloatingActionButton.large(
+                        onPressed: null,
+                        heroTag: "btn1",
+                        backgroundColor: Colors.red,
+                        child: Icon(Icons.delete,color: Colors.white,),
+                      )
+
+              ):Container(),
+
+              body:
+              buildView()
+
+          )),
     );
   }
   createSheet(String title)async{
@@ -92,41 +100,53 @@ class HomePage extends GetView<SheetController> {
                   onDragStarted: (){
                     controller.dragStarted.value = true;
                     selectedDragIndex = index;
+                    // Future.delayed(Duration(milliseconds: 400)).then((value) {
+                    //
+                    // });
 
                   },
+
                   onDragEnd: (value){
                     controller.dragStarted.value = false;
                     selectedDragIndex = -1;
+                    controller.itemWidth.value = 120;
+                    controller.itemHeight.value = 120;
+                    controller.itemColor.value = Colors.green;
                   },
                  data: index,
                  childWhenDragging: Container(),
-                  feedback: Material(
+                  feedback:
+                  Obx(()=>Material(
                     color: Colors.transparent,
-                    child: Container(
-                      width: 100,
-                      height: 50,
+                    child: AnimatedContainer(
+                      width: controller.itemWidth.value,
+                      height: controller.itemHeight.value,
                       padding: const EdgeInsets.all(8.0),
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                          color:index == 0?Colors.grey.withOpacity(0.5): Colors.deepOrange,
-                          borderRadius: BorderRadius.circular(15)),
+                          color:index == 0?Colors.grey.withOpacity(0.5): controller.itemColor.value,
+                          // borderRadius: BorderRadius.circular(15),
+                          shape: BoxShape.circle,
+                        border: Border.all(color: Colors.green.withOpacity(0.3),width: 4)
+                      ),
+                      duration: Duration(milliseconds: 300),
                       child: Text(controller.sheetNames[index],textAlign: TextAlign.center,style: TextStyle(fontWeight: index == 0?FontWeight.bold:FontWeight.normal,color:index == 0? Colors.black:Colors.white,fontSize: 10),),
                     ),
-                  ),
+                  )),
                   child: InkWell(
                     onTap: (){
                       if(index == 0){
                         Get.bottomSheet(InputNameWidget(title: createSheet,));
                       }
                       else{
-                        Get.to(SheetWidget(name: controller.sheetNames[index],))!.then((value) =>controller.init());
+                        Get.to(SheetWidget(name: controller.sheetNames[index],));
                       }
                     },
                     child:Container(
                       padding: EdgeInsets.all(8.0),
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                          color:index == 0?Colors.grey.withOpacity(0.5): Colors.deepOrange,
+                          color:index == 0?Colors.grey.withOpacity(0.5): controller.itemColor.value,
                           borderRadius: BorderRadius.circular(15)),
                       child: Text(controller.sheetNames[index],textAlign: TextAlign.center,style: TextStyle(fontWeight: FontWeight.bold,color:index == 0? Colors.black:Colors.white,fontSize: 14,)),
                     ),

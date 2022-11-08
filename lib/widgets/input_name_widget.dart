@@ -1,11 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:gsheet/widgets/button_widget.dart';
+import 'package:gsheet/widgets/my_text_field_widget.dart';
 
-class InputNameWidget extends StatelessWidget {
+class InputNameWidget extends StatefulWidget {
   InputNameWidget({Key? key,this.title}) : super(key: key);
   ValueChanged<String>? title;
+
+  @override
+  State<InputNameWidget> createState() => _InputNameWidgetState();
+}
+
+class _InputNameWidgetState extends State<InputNameWidget> {
   TextEditingController nameController = TextEditingController();
+
   final _formKey = GlobalKey<FormState>();
+
+  FocusNode myFocusNode = FocusNode();
+
+
+  @override
+  void initState() {
+    super.initState();
+    // myFocusNode.addListener(() {
+    //   print('1:  ${focusNode.hasFocus}');
+    // });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -17,7 +37,8 @@ class InputNameWidget extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              buildName(),
+              // buildName(),
+              MyTextFieldWidget(labelText: 'Name', controller: nameController,textAlign: TextAlign.center),
               const SizedBox(height: 16.0,),
               buildSubmit(),
             ],
@@ -26,20 +47,44 @@ class InputNameWidget extends StatelessWidget {
       ),
     );
   }
-  Widget buildName()=>TextFormField(
-    controller: nameController,
-    validator: (value)=> value!=null && value.isEmpty?'Enter Name':null,
-    decoration: const InputDecoration(
-      labelText: 'Name',
-      border: OutlineInputBorder(),
-    ),
-  );
+
+  // Widget buildName()=>
+  //     TextFormField(
+  //   controller: nameController,
+  //   focusNode: myFocusNode,
+  //   textAlign: TextAlign.center,
+  //   validator: (value)=> value!=null && value.isEmpty?'Enter Name':null,
+  //   decoration: InputDecoration(
+  //       filled: true,
+  //       fillColor: Colors.white,
+  //       labelText: 'Name',
+  //       labelStyle: TextStyle(
+  //           color:myFocusNode.hasFocus ?
+  //           Colors.deepOrangeAccent:
+  //           Colors.grey,
+  //       ),
+  //       focusedBorder: OutlineInputBorder(
+  //           borderRadius: BorderRadius.all(Radius.elliptical(50, 50)),
+  //           borderSide: BorderSide(color: Colors.deepOrangeAccent)
+  //
+  //       ),
+  //       border:OutlineInputBorder(
+  //           borderRadius: BorderRadius.all(Radius.elliptical(50, 50)),
+  //           borderSide:BorderSide(color: Colors.white)
+  //       ),
+  //     enabledBorder: OutlineInputBorder(
+  //         borderRadius: BorderRadius.all(Radius.elliptical(50, 50)),
+  //         borderSide:BorderSide(color: Colors.grey)
+  //     ),
+  //   ),
+  // );
+
   Widget buildSubmit()=>ButtonWidget(text: 'Create', onTap: (){
     final form = _formKey.currentState;
     final isValid = form!.validate();
     if(isValid){
-      if(title!=null){
-        title!(nameController.text);
+      if(widget.title!=null){
+        widget.title!(nameController.text);
       }
     }
 

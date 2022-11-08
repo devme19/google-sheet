@@ -20,6 +20,10 @@ class SheetController extends GetxController with StateMixin{
     "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/gsheet%40uplifted-kit-367109.iam.gserviceaccount.com"
   }
   ''';
+
+  RxDouble itemWidth = (120.0).obs;
+  RxDouble itemHeight = (120.0).obs;
+  Rx<Color> itemColor = Colors.green.obs;
    var _gsheets;
    List<Map<String,String>> items=[];
    // List<User> users=[];
@@ -42,6 +46,7 @@ class SheetController extends GetxController with StateMixin{
       getSheetNamesStatus.value = StateStatus.LOADING;
       _gsheets = GSheets(_credentials);
       spreadSheet = await _gsheets.spreadsheet(_spreadSheetId);
+
       for(var item in spreadSheet!.sheets){
         sheetNames.add(item.title);
       }
@@ -65,6 +70,12 @@ class SheetController extends GetxController with StateMixin{
       sheetNames.add(name);
     }catch(e){
     }
+  }
+  getSheet(String name)async{
+      try{
+        change(null, status: RxStatus.loading());
+        sheet = await _getWorkSheet(spreadSheet!,title:name);
+      }catch(e){}
   }
   Future<Worksheet> _getWorkSheet(Spreadsheet spreadsheet,{required String title})async{
     try{
@@ -153,8 +164,17 @@ class SheetController extends GetxController with StateMixin{
     return sheet!.deleteRow(index);
     // return true;
   }
-  Future<bool> deleteSheet(int index)async{
-    sheetNames.removeAt(index);
+  bool deleteSheet(int index){
+    if(spreadSheet == null) return false;
+    try{
+      Worksheet? worksheet = spreadSheet!.worksheetByTitle(sheetNames[index]);
+      if(worksheet == null) return false;
+      spreadSheet!.deleteWorksheet(worksheet);
+      sheetNames.removeAt(index);
+      Get.snackbar("Success", "Sheet deleted successfully",backgroundColor: Colors.black45,colorText: Colors.white,snackPosition: SnackPosition.BOTTOM);
+    }catch(e){
+      return false;
+    }
     return true;
   }
 }

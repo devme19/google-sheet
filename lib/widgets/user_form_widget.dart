@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:gsheet/controllers/sheet_controller.dart';
 import 'package:gsheet/models/user_fields.dart';
 import 'package:gsheet/widgets/button_widget.dart';
+import 'package:gsheet/widgets/my_text_field_widget.dart';
 import 'package:uuid/uuid.dart';
 class UserFormWidget extends GetView<SheetController> {
   UserFormWidget({Key? key,this.item}) : super(key: key){
@@ -15,17 +16,28 @@ class UserFormWidget extends GetView<SheetController> {
           continue;
         }
         textEditControllers.add(TextEditingController(text: item != null?item![mItem]:''));
-        textFormFields.add(Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: TextFormField(
-            controller: textEditControllers.last,
-            validator: (value)=> value!=null && value.isEmpty?'Enter $mItem':null,
-            decoration: InputDecoration(
-              labelText: mItem,
-              border: const OutlineInputBorder(),
+        textFormFields.add(
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16.0),
+            child: MyTextFieldWidget(
+                labelText: mItem
+                , controller: textEditControllers.last
+                ,textAlign: TextAlign.center,
+                textInputAction: mItem == controller.headerRow.last?TextInputAction.done:TextInputAction.next,
             ),
-          ),
-        ));
+          )
+        //     Padding(
+        //   padding: const EdgeInsets.symmetric(vertical: 8.0),
+        //   child: TextFormField(
+        //     controller: textEditControllers.last,
+        //     validator: (value)=> value!=null && value.isEmpty?'Enter $mItem':null,
+        //     decoration: InputDecoration(
+        //       labelText: mItem,
+        //       border: const OutlineInputBorder(),
+        //     ),
+        //   ),
+        // )
+        );
       }
     // }
   }
@@ -40,13 +52,14 @@ class UserFormWidget extends GetView<SheetController> {
     return
       Container(
         color: Colors.white,
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all( 16),
         child: Form(
           key: _formKey,
           child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                SizedBox(height: 8.0,),
                 ...textFormFields,
                 SizedBox(height: 8.0,),
                 buildSubmit()

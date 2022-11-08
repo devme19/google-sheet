@@ -13,7 +13,7 @@ class SheetWidget extends GetView<SheetController> {
   SheetWidget({Key? key,this.name}) : super(key: key){
     // controller.getAllRows();
     if(name != null) {
-      controller.createSheet(name!).then((value) => controller.getAllRows());
+      controller.getSheet(name!).then((value) => controller.getAllRows());
     }
   }
   final _key = GlobalKey<ExpandableFabState>();
@@ -28,8 +28,9 @@ class SheetWidget extends GetView<SheetController> {
          floatingActionButtonLocation: ExpandableFab.location,
          floatingActionButton: ExpandableFab(
            key: _key,
-           closeButtonStyle: ExpandableFabCloseButtonStyle(backgroundColor: Colors.deepOrange),
-           child: Icon(Icons.add),
+
+           closeButtonStyle: const ExpandableFabCloseButtonStyle(backgroundColor: Colors.deepOrange),
+           child: const Icon(Icons.add),
            backgroundColor: Colors.deepOrange,
 
          //   onPressed: () {
@@ -37,6 +38,7 @@ class SheetWidget extends GetView<SheetController> {
          // },
            children: [
            FloatingActionButton.small(
+             heroTag: "btn2",
              backgroundColor: Colors.deepOrangeAccent,
              child: Image.asset("assets/icons/row.png",color: Colors.white,width: 20,height: 20,),
              onPressed: () {
@@ -50,6 +52,7 @@ class SheetWidget extends GetView<SheetController> {
              },
            ),
            FloatingActionButton.small(
+             heroTag: "btn3",
              backgroundColor: Colors.deepOrangeAccent,
              child: Image.asset("assets/icons/column.png",color: Colors.white,width: 20,height: 20,),
              onPressed: () {
@@ -71,6 +74,7 @@ class SheetWidget extends GetView<SheetController> {
                SingleChildScrollView(
                    scrollDirection: Axis.horizontal,
                    child: DataTable(
+
                      dataRowColor: MaterialStateColor.resolveWith((states) => Colors.grey.shade300),
                        headingRowColor:
                        MaterialStateColor.resolveWith((states) => Colors.deepOrange),
